@@ -1,0 +1,49 @@
+Core ignores
+dist/
+
+node_modules/
+
+coverage/
+
+Logs
+*.log
+
+Environment
+.env*
+
+!.env.example
+
+Database
+migrations/*.js
+
+*.sqlite
+
+IDE
+.vscode/
+
+.idea/
+
+.DS_Store
+
+Documentation
+*.md
+
+!README.md
+
+Lock files
+package-lock.json
+
+yarn.lock
+
+Test snapshots
+**/*.snap
+
+Generated TypeORM files
+src/migrations/*.js
+
+ormconfig.json
+
+API documentation
+api-docs/
+
+swagger-spec.json
