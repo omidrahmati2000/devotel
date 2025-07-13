@@ -16,4 +16,5 @@ export interface UnifiedJob {
     skills: string[];
     benefits: string[];
     active: boolean;
+    rawData?: any;
 }

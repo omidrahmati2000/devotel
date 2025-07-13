@@ -1,34 +1,31 @@
 export interface Provider2Job {
-    id: number;
-    title: string;
-    employer: string;
-    details: string;
-    city: string;
-    employment: {
-        type: string;
-        experience: string;
+    position: string;
+    location: {
+        city: string;
+        state: string;
+        remote: boolean;
     };
     compensation: {
-        from: number;
-        to: number;
+        min: number;
+        max: number;
         currency: string;
     };
-    dates: {
-        posted: string;
-        deadline: string;
+    employer: {
+        companyName: string;
+        website: string;
     };
-    applicationUrl: string;
     requirements: {
-        skills: string;
-        perks: string;
+        experience: number;
+        technologies: string[];
     };
-    status: 'open' | 'closed';
+    datePosted: string;
 }
 
 export interface Provider2Response {
-    results: Provider2Job[];
-    metadata: {
-        count: number;
-        page: number;
+    status: string;
+    data: {
+        jobsList: {
+            [key: string]: Provider2Job;
+        };
     };
 }
