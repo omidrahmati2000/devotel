@@ -16,5 +16,9 @@ export interface UnifiedJob {
     skills: string[];
     benefits: string[];
     active: boolean;
-    rawData?: any;
+
+    industry?: string;           // From Provider1
+    companyWebsite?: string;     // From Provider2
+    experienceYears?: number;    // From Provider2
+    rawData?: any;              // Store original data
 }
