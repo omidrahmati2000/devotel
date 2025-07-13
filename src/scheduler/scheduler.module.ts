@@ -9,18 +9,14 @@ import { HttpRetryService } from '../utils/http-retry.service';
 import { LoggerService } from '../utils/logger.service';
 
 @Module({
-    imports: [
-        ScheduleModule.forRoot(),
-        ConfigModule,
-        HttpModule,
-        JobOffersModule,
-        TransformersModule,
-    ],
-    providers: [
-        JobSyncService,
-        HttpRetryService,
-        LoggerService,
-    ],
-    exports: [JobSyncService],
+  imports: [
+    ScheduleModule.forRoot(),
+    ConfigModule,
+    HttpModule,
+    JobOffersModule,
+    TransformersModule,
+  ],
+  providers: [JobSyncService, HttpRetryService, LoggerService],
+  exports: [JobSyncService],
 })
 export class SchedulerModule {}

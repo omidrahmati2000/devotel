@@ -16,14 +16,14 @@ async function bootstrap() {
 
   // Global pipes
   app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        transform: true,
-        forbidNonWhitelisted: true,
-        transformOptions: {
-          enableImplicitConversion: true,
-        },
-      }),
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
   );
 
   // Global filters
@@ -31,11 +31,11 @@ async function bootstrap() {
 
   // Swagger configuration
   const config = new DocumentBuilder()
-      .setTitle('Job Offers API')
-      .setDescription('API for managing job offers from multiple providers')
-      .setVersion('1.0')
-      .addTag('job-offers')
-      .build();
+    .setTitle('Job Offers API')
+    .setDescription('API for managing job offers from multiple providers')
+    .setVersion('1.0')
+    .addTag('job-offers')
+    .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 

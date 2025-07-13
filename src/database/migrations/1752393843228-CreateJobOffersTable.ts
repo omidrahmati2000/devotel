@@ -1,4 +1,5 @@
-import {MigrationInterface, QueryRunner, Table, TableIndex} from 'typeorm';
+import type {MigrationInterface, QueryRunner} from 'typeorm';
+import { Table, TableIndex} from 'typeorm';
 
 export class CreateJobOffersTable1752393843228 implements MigrationInterface {
 
