@@ -6,6 +6,7 @@ import { JobOffersService } from './job-offers.service';
 import { JobOffersController } from './job-offers.controller';
 import { TransformersModule } from '../transformers/transformers.module';
 import {JobOffer} from "../database/entities/job-offer.entity";
+import {JobOfferRepository} from "./repositories/job-offer.repository";
 
 @Module({
     imports: [
@@ -15,7 +16,7 @@ import {JobOffer} from "../database/entities/job-offer.entity";
         TransformersModule,
     ],
     controllers: [JobOffersController],
-    providers: [JobOffersService, JobOffersService],
+    providers: [JobOffersService, JobOffersService,JobOfferRepository],
     exports: [JobOffersService, JobOffersService],
 })
 export class JobOffersModule {}

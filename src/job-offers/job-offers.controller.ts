@@ -1,8 +1,10 @@
-import { Controller, Get, Param, Query, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Param, Query, HttpCode, HttpStatus, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { Request } from 'express';
 import { JobOffersService } from './job-offers.service';
 import { JobOfferQueryDto } from './dto/job-offer-query.dto';
 import { JobOfferResponseDto, PaginatedJobOffersDto } from './dto/job-offer-response.dto';
+import { paginateResource } from '../utils/pagination.utils';
 
 @ApiTags('job-offers')
 @Controller('job-offers')
@@ -25,8 +27,9 @@ export class JobOffersController {
     @ApiQuery({ name: 'minSalary', required: false, type: Number, description: 'Minimum salary' })
     @ApiQuery({ name: 'maxSalary', required: false, type: Number, description: 'Maximum salary' })
     @ApiQuery({ name: 'skills', required: false, type: [String], description: 'Filter by skills' })
-    async findAll(@Query() query: JobOfferQueryDto): Promise<PaginatedJobOffersDto> {
-        return this.jobOffersService.findAll(query);
+    async findAll(@Query() query: JobOfferQueryDto, @Req() req: Request): Promise<PaginatedJobOffersDto> {
+        const data = await this.jobOffersService.findAll(query);
+        return paginateResource(data, query, req);
     }
 
     @Get(':id')

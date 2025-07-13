@@ -1,163 +1,127 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { JobOfferRepository } from './repositories/job-offer.repository';
 import { JobOffer } from '../database/entities/job-offer.entity';
-import { JobOfferQueryDto } from './dto/job-offer-query.dto';
 import { UnifiedJob } from './interfaces/unified-job.interface';
 import { LoggerService } from '../utils/logger.service';
+import { JobOfferQueryDto } from './dto/job-offer-query.dto';
+import { JobOfferResponseDto } from './dto/job-offer-response.dto';
 
 @Injectable()
 export class JobOffersService {
     constructor(
-        @InjectRepository(JobOffer)
-        private readonly jobOfferRepository: Repository<JobOffer>,
+        @InjectRepository(JobOfferRepository)
+        private readonly jobOfferRepository: JobOfferRepository,
         private readonly logger: LoggerService,
     ) {}
 
-    async findAll(query: JobOfferQueryDto): Promise<{
-        data: JobOffer[];
-        total: number;
-        page: number;
-        pageSize: number;
-        totalPages: number;
-    }> {
-        const { page = 1, pageSize = 20, title, location, minSalary, maxSalary, company, skills } = query;
-
-        const queryBuilder = this.createQueryBuilder();
-        this.applyFilters(queryBuilder, { title, location, minSalary, maxSalary, company, skills });
-
-        const [data, total] = await queryBuilder
-            .skip((page - 1) * pageSize)
-            .take(pageSize)
-            .orderBy('job_offer.createdAt', 'DESC')
-            .getManyAndCount();
-
-        const totalPages = Math.ceil(total / pageSize);
-
-        return {
-            data,
-            total,
-            page,
-            pageSize,
-            totalPages,
-        };
+    async findAll(filters: JobOfferQueryDto): Promise<[JobOfferResponseDto[], number]> {
+        const [entities, total] = await this.jobOfferRepository.findWithFilters(filters);
+        const dtos = entities.map(entity => this.toResponseDto(entity));
+        return [dtos, total];
     }
 
-    async findOne(id: string): Promise<JobOffer> {
+    async findOne(id: string): Promise<JobOfferResponseDto> {
         const jobOffer = await this.jobOfferRepository.findOne({ where: { id } });
 
         if (!jobOffer) {
             throw new NotFoundException(`Job offer with ID ${id} not found`);
         }
 
-        return jobOffer;
+        return this.toResponseDto(jobOffer);
     }
 
-    async saveJobs(jobs: UnifiedJob[]): Promise<{ saved: number; updated: number; errors: number }> {
-        let saved = 0;
-        let updated = 0;
+    private toResponseDto(jobOffer: JobOffer): JobOfferResponseDto {
+        return {
+            id: jobOffer.id,
+            externalId: jobOffer.externalId,
+            provider: jobOffer.provider,
+            title: jobOffer.title,
+            description: jobOffer.description,
+            company: jobOffer.company,
+            location: jobOffer.location,
+            skills: jobOffer.skills || [],
+            experienceLevel: jobOffer.experienceLevel,
+            employmentType: jobOffer.employmentType,
+            minSalary: jobOffer.minSalary,
+            maxSalary: jobOffer.maxSalary,
+            currency: jobOffer.currency,
+            benefits: jobOffer.benefits || [],
+            applicationUrl: jobOffer.applicationUrl,
+            active: jobOffer.active,
+            createdAt: jobOffer.createdAt,
+            updatedAt: jobOffer.updatedAt,
+            lastSyncedAt: jobOffer.lastSyncedAt,
+        };
+    }
+
+    async saveJobs(jobs: UnifiedJob[]): Promise<{
+        saved: number;
+        updated: number;
+        errors: number;
+    }> {
+        const validJobs: Partial<JobOffer>[] = [];
         let errors = 0;
 
         for (const job of jobs) {
             try {
-                const existingJob = await this.jobOfferRepository.findOne({
-                    where: {
-                        externalId: job.externalId,
-                        provider: job.provider,
-                    },
+                validJobs.push({
+                    ...job,
+                    lastSyncedAt: new Date(),
                 });
-
-                if (existingJob) {
-                    // Update existing job
-                    await this.jobOfferRepository.update(existingJob.id, {
-                        ...job,
-                        lastSyncedAt: new Date(),
-                    });
-                    updated++;
-                } else {
-                    // Create new job
-                    const newJob = this.jobOfferRepository.create({
-                        ...job,
-                        lastSyncedAt: new Date(),
-                    });
-                    await this.jobOfferRepository.save(newJob);
-                    saved++;
-                }
             } catch (error) {
-                this.logger.error(`Error saving job ${job.externalId} from ${job.provider}:`, error);
+                this.logger.error(
+                    `Error preparing job ${job.externalId} from ${job.provider}:`,
+                    error,
+                );
                 errors++;
             }
         }
 
-        this.logger.log(`Job sync completed: ${saved} saved, ${updated} updated, ${errors} errors`);
-        return { saved, updated, errors };
+        try {
+            const result = await this.jobOfferRepository.bulkUpsert(validJobs);
+
+            this.logger.log(
+                `Job sync completed: ${result.saved} saved, ${result.updated} updated, ${errors} errors`,
+            );
+
+            return {
+                saved: result.saved,
+                updated: result.updated,
+                errors,
+            };
+        } catch (error) {
+            this.logger.error('Error during bulk upsert:', error);
+            return {
+                saved: 0,
+                updated: 0,
+                errors: jobs.length,
+            };
+        }
     }
 
-    async getLastSyncInfo(): Promise<{ lastSync: Date | null; totalJobs: number }> {
-        const result = await this.jobOfferRepository
-            .createQueryBuilder('job_offer')
-            .select('MAX(job_offer.lastSyncedAt)', 'lastSync')
-            .addSelect('COUNT(*)', 'totalJobs')
-            .getRawOne();
+    async getLastSyncInfo(): Promise<{
+        lastSync: Date | null;
+        totalJobs: number;
+        activeJobs: number;
+        providers: Array<{
+            provider: string;
+            count: number;
+            lastSync: Date;
+        }>;
+    }> {
+        const [syncInfo, providerStats] = await Promise.all([
+            this.jobOfferRepository.getLastSyncInfo(),
+            this.jobOfferRepository.getProviderStats(),
+        ]);
 
         return {
-            lastSync: result.lastSync,
-            totalJobs: parseInt(result.totalJobs, 10),
+            ...syncInfo,
+            providers: providerStats,
         };
     }
 
-    private createQueryBuilder(): SelectQueryBuilder<JobOffer> {
-        return this.jobOfferRepository.createQueryBuilder('job_offer');
-    }
-
-    private applyFilters(
-        queryBuilder: SelectQueryBuilder<JobOffer>,
-        filters: {
-            title?: string;
-            location?: string;
-            minSalary?: number;
-            maxSalary?: number;
-            company?: string;
-            skills?: string[];
-        },
-    ): void {
-        if (filters.title) {
-            queryBuilder.andWhere('LOWER(job_offer.title) LIKE LOWER(:title)', {
-                title: `%${filters.title}%`,
-            });
-        }
-
-        if (filters.location) {
-            queryBuilder.andWhere('LOWER(job_offer.location) LIKE LOWER(:location)', {
-                location: `%${filters.location}%`,
-            });
-        }
-
-        if (filters.company) {
-            queryBuilder.andWhere('LOWER(job_offer.company) LIKE LOWER(:company)', {
-                company: `%${filters.company}%`,
-            });
-        }
-
-        if (filters.minSalary !== undefined) {
-            queryBuilder.andWhere('job_offer.maxSalary >= :minSalary', {
-                minSalary: filters.minSalary,
-            });
-        }
-
-        if (filters.maxSalary !== undefined) {
-            queryBuilder.andWhere('job_offer.minSalary <= :maxSalary', {
-                maxSalary: filters.maxSalary,
-            });
-        }
-
-        if (filters.skills && filters.skills.length > 0) {
-            queryBuilder.andWhere('job_offer.skills && :skills', {
-                skills: filters.skills,
-            });
-        }
-
-        // Only show active jobs by default
-        queryBuilder.andWhere('job_offer.active = :active', { active: true });
+    async deactivateStaleJobs(provider: string, syncDate: Date): Promise<number> {
+        return this.jobOfferRepository.deactivateStaleJobs(provider, syncDate);
     }
 }

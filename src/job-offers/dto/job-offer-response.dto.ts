@@ -14,43 +14,37 @@ export class JobOfferResponseDto {
     title: string;
 
     @ApiProperty()
-    company: string;
+    description: string;
 
     @ApiProperty()
-    description: string;
+    company: string;
 
     @ApiProperty()
     location: string;
 
-    @ApiProperty()
-    employmentType: string;
+    @ApiProperty({ type: [String] })
+    skills: string[];
 
     @ApiProperty()
     experienceLevel: string;
 
-    @ApiProperty({ nullable: true })
-    minSalary: number | null;
-
-    @ApiProperty({ nullable: true })
-    maxSalary: number | null;
-
-    @ApiProperty({ nullable: true })
-    currency: string | null;
-
-    @ApiProperty({ nullable: true })
-    postedDate: Date | null;
-
-    @ApiProperty({ nullable: true })
-    applicationDeadline: Date | null;
-
     @ApiProperty()
-    applicationUrl: string;
+    employmentType: string;
 
-    @ApiProperty({ type: [String] })
-    skills: string[];
+    @ApiProperty({ nullable: true })
+    minSalary?: number;
+
+    @ApiProperty({ nullable: true })
+    maxSalary?: number;
+
+    @ApiProperty({ nullable: true })
+    currency?: string;
 
     @ApiProperty({ type: [String] })
     benefits: string[];
+
+    @ApiProperty()
+    applicationUrl: string;
 
     @ApiProperty()
     active: boolean;
@@ -60,21 +54,30 @@ export class JobOfferResponseDto {
 
     @ApiProperty()
     updatedAt: Date;
+
+    @ApiProperty({ nullable: true })
+    lastSyncedAt?: Date;
 }
 
 export class PaginatedJobOffersDto {
+    @ApiProperty()
+    statusCode: string;
+
     @ApiProperty({ type: [JobOfferResponseDto] })
     data: JobOfferResponseDto[];
 
     @ApiProperty()
-    total: number;
+    count: number;
 
     @ApiProperty()
-    page: number;
+    currentPage: string;
+
+    @ApiProperty({ nullable: true })
+    nextPage: string | null;
+
+    @ApiProperty({ nullable: true })
+    prevPage: string | null;
 
     @ApiProperty()
-    pageSize: number;
-
-    @ApiProperty()
-    totalPages: number;
+    lastPage: string;
 }
