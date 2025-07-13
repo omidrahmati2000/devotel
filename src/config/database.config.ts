@@ -39,8 +39,8 @@ export const dataSourceOptions: DataSourceOptions = {
     username: process.env.DB_USERNAME || 'postgres',
     password: process.env.DB_PASSWORD || 'postgres',
     database: process.env.DB_NAME || 'job_offers',
-    entities: ['dist/**/*.entity.js'],
-    migrations: ['dist/database/migrations/*.js'],
+    entities: ['src/**/*.entity.ts'],
+    migrations: ['src/database/migrations/*.ts'],
     synchronize: false,
 };
 
