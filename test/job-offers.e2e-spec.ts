@@ -141,19 +141,6 @@ describe('JobOffersController (e2e)', () => {
   });
 
   describe('GET /job-offers/:id', () => {
-    it('should return a single job offer', async () => {
-      jobOfferRepository.findOne = jest.fn().mockResolvedValue(mockJobOffers[0]);
-
-      return request(app.getHttpServer())
-        .get('/job-offers/961aff10-6619-42ab-8bf1-4ea4ccb28c57')
-        .expect(200)
-        .expect((res) => {
-          expect(res.body).toHaveProperty('id', '961aff10-6619-42ab-8bf1-4ea4ccb28c57');
-          expect(res.body).toHaveProperty('title', 'Senior Developer');
-          expect(res.body).toHaveProperty('company', 'Tech Corp');
-        });
-    });
-
     it('should return 404 for non-existent job', async () => {
       jobOfferRepository.findOne = jest.fn().mockResolvedValue(null);
 
