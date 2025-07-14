@@ -2,7 +2,7 @@ import type { Request } from 'express';
 
 export interface PaginationQuery {
   page?: number;
-  limit?: number;
+  pageSize?: number;
 }
 
 export interface PaginatedResult<T> {
@@ -21,7 +21,7 @@ export function paginateResource<T>(
   req: Request,
 ): PaginatedResult<T> {
   const page = parseInt(String(query.page || 1));
-  const limit = parseInt(String(query.limit || 20));
+  const limit = parseInt(String(query.pageSize || 20));
   const url = req.url;
   const [result, total] = data;
   const lastPageNum = Math.ceil(total / limit);
@@ -35,7 +35,6 @@ export function paginateResource<T>(
     if (pageNum === null) return null;
     const params = new URLSearchParams(queryParams);
     params.set('page', String(pageNum));
-    params.set('limit', String(limit));
     return `${baseUrl}?${params.toString()}`;
   };
 

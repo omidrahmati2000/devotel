@@ -18,10 +18,10 @@ export abstract class BaseJobTransformer {
   protected normalizeExperienceLevel(level: string | number): string {
     // Handle numeric years of experience
     if (typeof level === 'number') {
-      if (level === 0) return 'Entry Level';
+      if (level === 1) return 'Entry Level';
       if (level <= 2) return 'Junior';
-      if (level <= 5) return 'Mid Level';
-      if (level <= 8) return 'Senior';
+      if (level <= 4) return 'Mid Level';
+      if (level >= 5) return 'Senior';
       return 'Principal';
     }
 
@@ -46,6 +46,7 @@ export abstract class BaseJobTransformer {
     if (lowerTitle.includes('senior') || lowerTitle.includes('sr.')) return 'Senior';
     if (lowerTitle.includes('junior') || lowerTitle.includes('jr.')) return 'Junior';
     if (lowerTitle.includes('lead')) return 'Lead';
+    if (lowerTitle.includes('intern')) return 'Intern';
     if (lowerTitle.includes('principal') || lowerTitle.includes('staff')) return 'Principal';
     if (lowerTitle.includes('manager')) return 'Manager';
     return 'Mid Level';
@@ -107,6 +108,6 @@ export abstract class BaseJobTransformer {
       }
     }
 
-    return { min: null, max: null, currency: 'USD' };
+    return { min: null, max: null, currency: null };
   }
 }

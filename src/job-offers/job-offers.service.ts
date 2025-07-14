@@ -18,6 +18,7 @@ export class JobOffersService {
   async findAll(filters: JobOfferQueryDto): Promise<[JobOfferResponseDto[], number]> {
     const [entities, total] = await this.jobOfferRepository.findWithFilters(filters);
     const dtos = entities.map((entity) => this.toResponseDto(entity));
+    console.log(dtos);
     return [dtos, total];
   }
 
