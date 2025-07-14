@@ -138,13 +138,13 @@ export class JobOfferRepository extends Repository<JobOffer> {
 
     if (filters.minSalary !== undefined) {
       queryBuilder.andWhere('job_offer.max_salary >= :min_salary', {
-        minSalary: filters.minSalary,
+        min_salary: filters.minSalary,
       });
     }
 
     if (filters.maxSalary !== undefined) {
       queryBuilder.andWhere('job_offer.min_salary <= :max_salary', {
-        maxSalary: filters.maxSalary,
+        max_salary: filters.maxSalary,
       });
     }
 
