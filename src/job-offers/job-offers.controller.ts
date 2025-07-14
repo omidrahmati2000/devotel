@@ -1,4 +1,13 @@
-import { Controller, Get, Param, Query, HttpCode, HttpStatus, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  HttpCode,
+  HttpStatus,
+  Req,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { Request } from 'express';
 import { JobOffersService } from './job-offers.service';
@@ -47,7 +56,11 @@ export class JobOffersController {
     status: 404,
     description: 'Job offer not found',
   })
-  async findOne(@Param('id') id: string): Promise<JobOfferResponseDto> {
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid UUID',
+  })
+  async findOne(@Param('id', new ParseUUIDPipe()) id: string): Promise<JobOfferResponseDto> {
     return this.jobOffersService.findOne(id);
   }
 
